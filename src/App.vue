@@ -55,7 +55,7 @@
       </form>
     </section>
 
-    <section v-else class="landing">
+    <section v-else-if="loggedIn && view==='home'" class="landing">
       <h1 class="title">You're logged in</h1>
       <p class="subtitle">Below is what we can show from your token.</p>
       <div class="stack" style="margin-top: 12px;">
@@ -68,9 +68,53 @@
           <div class="mono info" style="margin-top: 8px;">{{ token }}</div>
         </details>
         <div class="row" style="margin-top: 8px;">
+          <button class="btn" style="width:auto; padding:8px 12px; margin-right:8px;" @click="goToProfile">Update Profile</button>
           <button class="btn" style="width:auto; padding:8px 12px;" @click="logout">Log out</button>
         </div>
       </div>
+      <!-- Profile information card; shows only fields that have values -->
+      <ProfileInfo :profile="profile" />
+    </section>
+
+    <!-- Profile Page -->
+    <section v-else-if="loggedIn && view==='profile'" class="card">
+      <h1 class="title">Update Profile</h1>
+      <p class="subtitle">Edit your profile information.</p>
+      <form class="stack" @submit.prevent="saveProfile">
+        <div class="field">
+          <label class="label" for="user-id">User ID</label>
+          <input id="user-id" class="input" :value="claims.sub" disabled />
+        </div>
+        <div class="field">
+          <label class="label" for="firstName">First Name</label>
+          <input id="firstName" class="input" v-model.trim="profile.firstName" />
+        </div>
+        <div class="field">
+          <label class="label" for="lastName">Last Name</label>
+          <input id="lastName" class="input" v-model.trim="profile.lastName" />
+        </div>
+        <div class="field">
+          <label class="label" for="country">Country</label>
+          <input id="country" class="input" v-model.trim="profile.country" />
+        </div>
+        <div class="field">
+          <label class="label" for="city">City</label>
+          <input id="city" class="input" v-model.trim="profile.city" />
+        </div>
+        <div class="field">
+          <label class="label" for="region">Region (State/Province)</label>
+          <input id="region" class="input" v-model.trim="profile.region" />
+        </div>
+        <button class="btn" type="submit" :disabled="loading">
+          <span v-if="!loading">Save Profile</span>
+          <span v-else>Saving…</span>
+        </button>
+        <div class="row" style="margin-top:8px">
+          <button type="button" class="btn secondary" style="width:auto; padding:8px 12px;" @click="backHome">Back</button>
+        </div>
+        <div v-if="error" class="error">{{ error }}</div>
+        <div v-if="saveStatus" class="info">{{ saveStatus }}</div>
+      </form>
     </section>
   </main>
   
@@ -79,6 +123,8 @@
 <script setup>
 import { reactive, ref, computed, onMounted } from 'vue';
 import { AUTH_BASE_URL, PORTAL_BASE_URL } from './config';
+import ProfileInfo from './components/ProfileInfo.vue';
+import { getProfile, saveProfile as persistProfile } from './services/profile';
 
 const username = ref('');
 const password = ref('');
@@ -86,6 +132,8 @@ const showRegister = ref(false);
 const reg = reactive({ username: '', email: '', password: '', confirm: '' });
 const loading = ref(false);
 const error = ref('');
+const saveStatus = ref('');
+const view = ref('home'); // 'home' | 'profile'
 
 const state = reactive({ token: '', claims: null });
 const loggedIn = computed(() => !!state.token && !!state.claims);
@@ -141,8 +189,64 @@ async function onSubmit() {
     const data = await res.json();
     if (!data?.token) throw new Error('No token returned');
     setSession(data.token);
+    await loadProfile();
+    // After login, stay on home view; user can navigate to profile page
   } catch (e) {
     error.value = e?.message || 'Something went wrong';
+  } finally {
+    loading.value = false;
+  }
+}
+
+function goToProfile() {
+  error.value = '';
+  saveStatus.value = '';
+  view.value = 'profile';
+  loadProfile();
+}
+
+function backHome() {
+  error.value = '';
+  saveStatus.value = '';
+  view.value = 'home';
+}
+
+const profile = reactive({ firstName: '', lastName: '', country: '', city: '', region: '' });
+const hasProfile = ref(false);
+
+async function loadProfile() {
+  try {
+    error.value = '';
+    saveStatus.value = '';
+    const data = await getProfile(PORTAL_BASE_URL, state.token);
+    if (!data) {
+      hasProfile.value = false;
+      Object.assign(profile, { firstName: '', lastName: '', country: '', city: '', region: '' });
+      return;
+    }
+    hasProfile.value = true;
+    Object.assign(profile, {
+      firstName: data.firstName || '',
+      lastName: data.lastName || '',
+      country: data.country || '',
+      city: data.city || '',
+      region: data.region || '',
+    });
+  } catch (e) {
+    error.value = e?.message || 'Failed to load profile';
+  }
+}
+
+async function saveProfile() {
+  try {
+    error.value = '';
+    saveStatus.value = '';
+    loading.value = true;
+    await persistProfile(PORTAL_BASE_URL, state.token, profile, hasProfile.value);
+    hasProfile.value = true;
+    saveStatus.value = 'Profile saved';
+  } catch (e) {
+    error.value = e?.message || 'Failed to save profile';
   } finally {
     loading.value = false;
   }
@@ -173,16 +277,7 @@ async function onRegister() {
     const data = await res.json();
     if (!data?.token) throw new Error('No token returned');
     setSession(data.token);
-    // Initialize profile on portal backend (idempotent)
-    const initRes = await fetch(`${PORTAL_BASE_URL}/api/profile/initialize`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${state.token}`,
-      },
-    });
-    if (!initRes.ok) {
-      try { const j = await initRes.json(); console.warn('Profile init error', j); } catch {}
-    }
+    await loadProfile();
     showRegister.value = false;
   } catch (e) {
     error.value = e?.message || 'Something went wrong';
@@ -199,12 +294,14 @@ function logout() {
   password.value = '';
   showRegister.value = false;
   Object.assign(reg, { username: '', email: '', password: '', confirm: '' });
+  view.value = 'home';
+  saveStatus.value = '';
 }
 
 onMounted(() => {
   const t = localStorage.getItem('auth_token');
   if (t) {
-    try { setSession(t); } catch { localStorage.removeItem('auth_token'); }
+    try { setSession(t); loadProfile(); } catch { localStorage.removeItem('auth_token'); }
   }
 });
 </script>
