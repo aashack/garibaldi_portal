@@ -7,12 +7,14 @@ const hasProfile = ref(false);
 
 async function loadProfile(token) {
   const data = await getProfile(PORTAL_BASE_URL, token);
+  console.log(data)
   if (!data) {
     hasProfile.value = false;
     Object.assign(profile, { firstName: '', lastName: '', country: '', city: '', region: '' });
     return null;
   }
   hasProfile.value = true;
+  console.log(1, data)
   Object.assign(profile, {
     firstName: data.firstName || '',
     lastName: data.lastName || '',

@@ -47,9 +47,9 @@ const currentView = computed(() =>
 )
 
 const viewProps = computed(() => ({
-  claims,
+  claims: claims.value,
   token: token.value,
-  humanExp,
+  humanExp: humanExp.value,
   profile: profile.value,
   loading: loading.value,
   error: error.value,

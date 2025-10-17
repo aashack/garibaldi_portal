@@ -57,11 +57,14 @@ const humanExp = computed(() => {
 });
 
 async function login(username, password) {
+  console.log('Attempting login...', { username });
   const res = await fetch(`${AUTH_BASE_URL}/api/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ username, password }),
   });
+
+  console.log('Login response status:', res.status);
 
   if (!res.ok) {
     let msg = 'Login failed';
