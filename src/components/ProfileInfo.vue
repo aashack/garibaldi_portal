@@ -25,7 +25,7 @@ const fields = [
   { key: 'lastName', label: 'Last Name' },
   { key: 'country', label: 'Country' },
   { key: 'city', label: 'City' },
-  { key: 'region', label: 'Region' },
+  { key: 'region', label: 'Province/State' },
 ];
 
 const visibleFields = computed(() => {
