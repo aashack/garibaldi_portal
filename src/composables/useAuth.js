@@ -21,13 +21,17 @@ function base64UrlToJson(b64url) {
 
 function decodeJwt(t) {
   const parts = t.split('.');
-  if (parts.length !== 3) return null;
+  if (parts.length !== 3) {
+    return null;
+  }
   return base64UrlToJson(parts[1]);
 }
 
 function setSession(t) {
   const c = decodeJwt(t);
-  if (!c) throw new Error('Invalid token');
+  if (!c) {
+    throw new Error('Invalid token');
+  }
   state.token = t;
   state.claims = c;
   localStorage.setItem('auth_token', t);
@@ -41,9 +45,13 @@ function clearSession() {
 
 const token = computed(() => state.token);
 const claims = computed(() => state.claims || {});
-const loggedIn = computed(() => !!state.token && !!state.claims);
+const loggedIn = computed(() => {
+  return !!state.token && !!state.claims;
+});
 const humanExp = computed(() => {
-  if (!state.claims?.exp) return '—';
+  if (!state.claims?.exp) {
+    return '—';
+  }
   const d = new Date(state.claims.exp * 1000);
   return d.toLocaleString();
 });
@@ -54,16 +62,23 @@ async function login(username, password) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ username, password }),
   });
+
   if (!res.ok) {
     let msg = 'Login failed';
     try {
       const j = await res.json();
-      if (j?.error) msg = j.error;
+      if (j?.error) {
+        msg = j.error;
+      }
     } catch {}
     throw new Error(msg);
   }
+
   const data = await res.json();
-  if (!data?.token) throw new Error('No token returned');
+  if (!data?.token) {
+    throw new Error('No token returned');
+  }
+  
   setSession(data.token);
   return data;
 }
@@ -72,21 +87,34 @@ async function register({ username, email, password, confirm }) {
   if (password !== confirm) {
     throw new Error('Passwords do not match');
   }
+
   const res = await fetch(`${AUTH_BASE_URL}/api/auth/register`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ username, email, password, confirmPassword: confirm }),
+    body: JSON.stringify({ 
+      username, 
+      email, 
+      password, 
+      confirmPassword: confirm 
+    }),
   });
+
   if (!res.ok) {
     let msg = 'Registration failed';
     try {
       const j = await res.json();
-      if (j?.error) msg = j.error;
+      if (j?.error) {
+        msg = j.error;
+      }
     } catch {}
     throw new Error(msg);
   }
+
   const data = await res.json();
-  if (!data?.token) throw new Error('No token returned');
+  if (!data?.token) {
+    throw new Error('No token returned');
+  }
+
   setSession(data.token);
   return data;
 }

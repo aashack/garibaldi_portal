@@ -16,61 +16,52 @@
       @backToLogin="showRegister = false"
     />
 
-    <HomeView
-      v-else-if="loggedIn && view === 'home'"
-      :claims="claims"
-      :token="token"
-      :humanExp="humanExp"
-      :profile="profile"
-      @goToProfile="goToProfile"
-      @logout="handleLogout"
-    />
-
-    <ProfileForm
-      v-else-if="loggedIn && view === 'profile'"
-      :claims="claims"
-      :profile="profile"
-      :loading="loading"
-      :error="error"
-      :saveStatus="saveStatus"
-      @save="handleSaveProfile"
-      @back="backHome"
+    <component 
+      :is="loggedIn ? currentView : null"
+      v-bind="viewProps"
+      v-on="viewEvents"
     />
   </HeaderBar>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
-import HeaderBar from './components/HeaderBar.vue';
-import LoginForm from './components/auth/LoginForm.vue';
-import RegisterForm from './components/auth/RegisterForm.vue';
-import HomeView from './components/HomeView.vue';
-import ProfileForm from './components/profile/ProfileForm.vue';
-import { useAuth } from './composables/useAuth';
-import { useProfile } from './composables/useProfile';
+import { ref, computed, onMounted } from 'vue'
+import HeaderBar from './components/HeaderBar.vue'
+import LoginForm from './components/auth/LoginForm.vue'
+import RegisterForm from './components/auth/RegisterForm.vue'
+import HomeView from './components/HomeView.vue'
+import ProfileForm from './components/profile/ProfileForm.vue'
+import { useAuth } from './composables/useAuth'
+import { useProfile } from './composables/useProfile'
+import { useView } from './composables/useView'
 
-const { token, claims, loggedIn, humanExp, login, register, logout, initFromStorage } = useAuth();
-const { profile, hasProfile, loadProfile, saveProfile } = useProfile();
+const { token, claims, loggedIn, humanExp, login, register, logout, initFromStorage } = useAuth()
+const { profile, hasProfile, loadProfile, saveProfile } = useProfile()
+const { view, error, saveStatus, goToProfile, backHome } = useView()
 
-const showRegister = ref(false);
-const loading = ref(false);
-const error = ref('');
-const saveStatus = ref('');
-const view = ref('home'); // 'home' | 'profile'
+const showRegister = ref(false)
+const loading = ref(false)
 
-function goToProfile() {
-  error.value = '';
-  saveStatus.value = '';
-  view.value = 'profile';
-  // ensure latest profile is loaded when entering
-  if (token.value) loadProfile(token.value).catch((e) => (error.value = e?.message || 'Failed to load profile'));
-}
+const currentView = computed(() => 
+  view.value === 'home' ? HomeView : ProfileForm
+)
 
-function backHome() {
-  error.value = '';
-  saveStatus.value = '';
-  view.value = 'home';
-}
+const viewProps = computed(() => ({
+  claims,
+  token: token.value,
+  humanExp,
+  profile: profile.value,
+  loading: loading.value,
+  error: error.value,
+  saveStatus: saveStatus.value
+}))
+
+const viewEvents = computed(() => ({
+  goToProfile,
+  logout: handleLogout,
+  save: handleSaveProfile,
+  back: backHome
+}))
 
 async function handleLogin({ username, password }) {
   error.value = '';
