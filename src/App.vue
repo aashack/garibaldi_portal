@@ -50,7 +50,7 @@ const viewProps = computed(() => ({
   claims: claims.value,
   token: token.value,
   humanExp: humanExp.value,
-  profile: profile.value,
+  profile: profile,
   loading: loading.value,
   error: error.value,
   saveStatus: saveStatus.value
