@@ -13,7 +13,7 @@
       </details>
       <div class="row" style="margin-top: 8px;">
         <button class="btn" style="width:auto; padding:8px 12px; margin-right:8px;" @click="$emit('goToProfile')">Update Profile</button>
-        <button class="btn" style="width:auto; padding:8px 12px;" @click="$emit('logout')">Log out</button>
+        <button v-if="showLogout" class="btn" style="width:auto; padding:8px 12px;" @click="$emit('logout')">Log out</button>
       </div>
     </div>
     <ProfileInfo :profile="profile" />
@@ -28,6 +28,7 @@ defineProps({
   token: { type: String, required: true, default: '' },
   humanExp: { type: String, required: true, default: '' },
   profile: { type: Object, required: true, default: () => ({}) },
+  showLogout: { type: Boolean, default: false },
 });
 
 defineEmits(['goToProfile', 'logout']);

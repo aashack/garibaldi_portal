@@ -1,8 +1,5 @@
 <template>
   <div class="header">Garibadli Systems</div>
-  <main class="viewport">
-    <slot />
-  </main>
 </template>
 
 <script setup>
@@ -10,4 +7,3 @@
 
 <style scoped>
 </style>
-
