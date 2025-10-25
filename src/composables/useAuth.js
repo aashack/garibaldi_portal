@@ -3,6 +3,7 @@ import { AUTH_BASE_URL } from '../config';
 
 // Module-scoped state to behave like a simple store
 const state = reactive({ token: '', claims: null });
+let expiryTimerId = null;
 
 function base64UrlToJson(b64url) {
   try {
@@ -35,18 +36,28 @@ function setSession(t) {
   state.token = t;
   state.claims = c;
   localStorage.setItem('auth_token', t);
+  scheduleExpiryCheck();
 }
 
 function clearSession() {
   localStorage.removeItem('auth_token');
   state.token = '';
   state.claims = null;
+  if (expiryTimerId) {
+    clearTimeout(expiryTimerId);
+    expiryTimerId = null;
+  }
 }
 
 const token = computed(() => state.token);
 const claims = computed(() => state.claims || {});
+const expired = computed(() => {
+  const exp = state.claims?.exp;
+  if (!exp) return false;
+  return Date.now() >= exp * 1000;
+});
 const loggedIn = computed(() => {
-  return !!state.token && !!state.claims;
+  return !!state.token && !!state.claims && !expired.value;
 });
 const humanExp = computed(() => {
   if (!state.claims?.exp) {
@@ -131,10 +142,31 @@ function initFromStorage() {
   if (t) {
     try {
       setSession(t);
+      // If token is already expired, immediately clear session
+      if (expired.value) {
+        clearSession();
+      }
     } catch {
       localStorage.removeItem('auth_token');
     }
   }
+}
+
+function scheduleExpiryCheck() {
+  if (expiryTimerId) {
+    clearTimeout(expiryTimerId);
+    expiryTimerId = null;
+  }
+  const exp = state.claims?.exp;
+  if (!exp) return;
+  const msUntilExpiry = exp * 1000 - Date.now();
+  if (msUntilExpiry <= 0) {
+    clearSession();
+    return;
+  }
+  expiryTimerId = setTimeout(() => {
+    clearSession();
+  }, msUntilExpiry);
 }
 
 export function useAuth() {
@@ -142,6 +174,7 @@ export function useAuth() {
     token,
     claims,
     loggedIn,
+    expired,
     humanExp,
     setSession,
     login,
