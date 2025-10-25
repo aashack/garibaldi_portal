@@ -1,4 +1,7 @@
 <template>
+  <div class="top-actions">
+    <router-link class="btn secondary" to="/">Back</router-link>
+  </div>
   <section class="stack">
     <LoginForm
       v-if="!showRegister"
@@ -65,5 +68,15 @@ async function handleRegister(payload) {
 </script>
 
 <style scoped>
+.top-actions {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  display: flex;
+  gap: 8px;
+}
+.top-actions :deep(.btn), .top-actions .btn {
+  width: auto;
+  padding: 8px 12px;
+}
 </style>
-
