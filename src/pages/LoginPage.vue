@@ -42,7 +42,9 @@ async function handleLogin({ username, password }) {
   loading.value = true
   try {
     await login(username, password)
-    if (token.value) await loadProfile(token.value)
+    if (token.value) {
+      await loadProfile(token.value)
+    }
     router.replace({ name: 'profile' })
   } catch (e) {
     error.value = e?.message || 'Something went wrong'
@@ -56,7 +58,9 @@ async function handleRegister(payload) {
   loading.value = true
   try {
     await register(payload)
-    if (token.value) await loadProfile(token.value)
+    if (token.value) {
+      await loadProfile(token.value)
+    }
     showRegister.value = false
     router.replace({ name: 'profile' })
   } catch (e) {

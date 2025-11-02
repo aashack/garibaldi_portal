@@ -53,7 +53,9 @@ const token = computed(() => state.token);
 const claims = computed(() => state.claims || {});
 const expired = computed(() => {
   const exp = state.claims?.exp;
-  if (!exp) return false;
+  if (!exp) {
+    return false;
+  }
   return Date.now() >= exp * 1000;
 });
 const loggedIn = computed(() => {
@@ -158,7 +160,9 @@ function scheduleExpiryCheck() {
     expiryTimerId = null;
   }
   const exp = state.claims?.exp;
-  if (!exp) return;
+  if (!exp) {
+    return;
+  }
   const msUntilExpiry = exp * 1000 - Date.now();
   if (msUntilExpiry <= 0) {
     clearSession();
