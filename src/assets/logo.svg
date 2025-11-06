@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="256" height="256" viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Garibaldi logo">
+  <defs>
+    <clipPath id="clip">
+      <circle cx="128" cy="128" r="118" />
+    </clipPath>
+  </defs>
+  <!-- Outer circle -->
+  <circle cx="128" cy="128" r="118" fill="#0b5d3b" />
+  <g clip-path="url(#clip)">
+    <!-- Snowcaps / mountains -->
+    <path d="M30 150 L95 70 L120 105 L145 85 L210 150 Z" fill="#ffffff" opacity="0.95"/>
+    <path d="M95 70 L120 105 L145 85 L135 110 L110 120 Z" fill="#0b5d3b"/>
+
+    <!-- Simplified pine trees (white) -->
+    <g fill="#ffffff">
+      <path d="M54 210 L64 210 L64 188 L72 188 L60 160 L48 188 L56 188 Z"/>
+      <path d="M84 210 L94 210 L94 188 L102 188 L90 158 L78 188 L86 188 Z"/>
+      <path d="M114 210 L124 210 L124 188 L132 188 L120 156 L108 188 L116 188 Z"/>
+      <path d="M144 210 L154 210 L154 188 L162 188 L150 160 L138 188 L146 188 Z"/>
+      <path d="M174 210 L184 210 L184 188 L192 188 L180 158 L168 188 L176 188 Z"/>
+    </g>
+  </g>
+</svg>
+

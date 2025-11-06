@@ -5,6 +5,7 @@
   --muted: #6b7280; /* gray-500 */
   --accent: #111827;
   --border: #e5e7eb;
+  --brand-green: #0b5d3b;
 }
 
 html, body, #app {
@@ -33,6 +34,8 @@ body {
   align-items: center;
   justify-content: center;
   padding: 24px;
+  /* leave space for fixed top bar */
+  padding-top: 96px;
 }
 
 .card {
@@ -92,5 +95,12 @@ body {
   border-radius: 12px;
   box-shadow: 0 10px 30px rgba(0,0,0,0.06);
   padding: 24px;
+}
+
+/* Shared page container to take ~90% of width */
+.page-container {
+  width: 90vw;
+  max-width: 1400px;
+  margin: 0 auto;
 }
 

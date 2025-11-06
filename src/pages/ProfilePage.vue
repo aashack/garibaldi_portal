@@ -1,32 +1,30 @@
 <template>
-  <div class="top-actions">
-    <router-link class="btn" to="/about">About</router-link>
-    <button class="btn secondary" @click="handleLogout">Log out</button>
-  </div>
-  <section class="stack">
-    <HomeView
-      v-if="showHome"
-      :claims="claims"
-      :token="token"
-      :humanExp="humanExp"
-      :profile="profile"
-      :showLogout="false"
-      @goToProfile="goToProfile"
-      @logout="handleLogout"
-    />
+  <div class="page-container">
+    <section class="stack">
+      <HomeView
+        v-if="showHome"
+        :claims="claims"
+        :token="token"
+        :humanExp="humanExp"
+        :profile="profile"
+        :showLogout="false"
+        @goToProfile="goToProfile"
+        @logout="handleLogout"
+      />
 
-    <ProfileForm
-      v-else
-      :claims="claims"
-      :profile="profile"
-      :loading="loading"
-      :error="error"
-      :saveStatus="saveStatus"
-      @save="handleSaveProfile"
-      @back="backHome"
-    />
-  </section>
-</template>
+      <ProfileForm
+        v-else
+        :claims="claims"
+        :profile="profile"
+        :loading="loading"
+        :error="error"
+        :saveStatus="saveStatus"
+        @save="handleSaveProfile"
+        @back="backHome"
+      />
+    </section>
+  </div>
+ </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
@@ -83,15 +81,7 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.top-actions {
-  position: fixed;
-  top: 16px;
-  right: 16px;
-  display: flex;
-  gap: 8px;
-}
-.top-actions :deep(.btn), .top-actions .btn {
-  width: auto;
-  padding: 8px 12px;
-}
+
+/* Make content fill ~90% width across child components */
+:deep(.landing), :deep(.card) { max-width: none; }
 </style>
