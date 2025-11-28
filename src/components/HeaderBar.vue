@@ -22,6 +22,7 @@ import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuth } from '../composables/useAuth'
 import logoUrl from '../assets/logo.svg'
+//  import logoUrl from '../assets/garibaldi_redo.png'
 
 const route = useRoute()
 const router = useRouter()
